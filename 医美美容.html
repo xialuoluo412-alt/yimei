@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>悦颜·医美</title>
+<style>
+  :root {
+    --primary: #D48A96;
+    --primary-light: #F0D6DC;
+    --primary-dark: #B06A76;
+    --gold: #D4A0A0;
+    --gold-dark: #B88288;
+    --bg: #FDF6F8;
+    --bg-warm: #F5E8EC;
+    --white: #FFFFFF;
+    --dark: #2C2426;
+    --text-main: #2C2426;
+    --text-sub: #7A6A6E;
+    --text-hint: #AD9A9E;
+    --border: #EEDEE2;
+    --card-shadow: 0 2px 16px rgba(180,100,120,0.08);
+    --safe-top: env(safe-area-inset-top, 20px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body {
+    width:100%; height:100%; overflow:hidden;
+    font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue','Microsoft YaHei',sans-serif;
+    background:var(--bg); color:var(--text-main);
+    font-size:14px; line-height:1.4;
+  }
+
+  /* App容器 */
+  .app {
+    width:100%; max-width:430px; height:100%; margin:0 auto; position:relative; overflow:hidden;
+    background:linear-gradient(160deg, #FDF6F8 0%, #F8E8EE 20%, #F5E0E8 40%, #F0D8E0 55%, #F5E8EC 70%, #FAF0F3 85%, #FDF6F8 100%);
+    display:flex; flex-direction:column;
+  }
+
+  /* ===== 页面系统 ===== */
+  .pages { flex:1; position:relative; overflow:hidden; }
+  .page {
+    position:absolute; top:0; left:0; right:0; bottom:0;
+    overflow-y:auto; -webkit-overflow-scrolling:touch; scroll-behavior:smooth;
+    opacity:0; pointer-events:none; transform:translateX(20px);
+    transition:opacity .35s cubic-bezier(.4,0,.2,1),transform .35s cubic-bezier(.4,0,.2,1);
+    padding-bottom: calc(20px + var(--safe-bottom));
+  }
+  .page::-webkit-scrollbar{display:none}
+  .page.active { opacity:1; pointer-events:auto; transform:translateX(0); z-index:1; }
+  .page.slide-left-out { opacity:0; transform:translateX(-20px); z-index:0; }
+
+  /* ===== 状态栏 ===== */
+  .status-bar {
+    height:44px; padding:10px 16px 0; display:flex; justify-content:space-between; align-items:center;
+    position:sticky; top:0; z-index:100; flex-shrink:0;
+    background:rgba(253,246,248,.85);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+  }
+  .sb-time{font-size:15px;font-weight:600;color:#222}
+  .sb-icons{display:flex;gap:5px;align-items:center}
+  .sb-icons svg{width:17px;height:17px}
+
+  /* ===== 首页导航网格 ===== */
+  .nav-grid{margin:0 16px 28px;display:grid;grid-template-columns:repeat(5,1fr);gap:8px 4px;padding:16px 12px;background:rgba(255,255,255,0.5);border-radius:20px;border:1px solid rgba(212,138,150,0.08)}
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .2s cubic-bezier(.34,1.56,.64,1);padding:4px 0}
+  .nav-item:active{transform:scale(.92)}
+  .nav-icon{
+    width:54px;height:54px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+    position:relative;
+    background:linear-gradient(145deg,var(--white),#FDF0F3);
+    border:1.5px solid rgba(212,138,150,.15);
+    box-shadow:0 4px 14px rgba(212,138,150,.1),inset 0 1px 0 rgba(255,255,255,.8);
+    color:var(--primary);
+    transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s;
+  }
+  .nav-item:active .nav-icon{transform:scale(.9);box-shadow:0 2px 6px rgba(212,138,150,.06),inset 0 1px 0 rgba(255,255,255,.8)}
+  .nav-icon svg{width:24px;height:24px;filter:drop-shadow(0 1px 2px rgba(212,138,150,.15))}
+  .nav-label{font-size:11px;color:var(--text-sub);font-weight:500;white-space:nowrap;letter-spacing:.8px}
+  .nav-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;background:linear-gradient(135deg,#C4606C,var(--primary-dark));color:#fff;font-size:10px;font-weight:700;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid var(--bg);box-shadow:0 2px 6px rgba(180,80,90,.3)}
+
+  /* ===== 通用组件 ===== */
+  .section-title{font-size:18px;font-weight:700;color:var(--text-main);margin-bottom:14px;display:flex;align-items:center;gap:6px}
+  .section-title::before{content:'';width:4px;height:18px;border-radius:2px;background:linear-gradient(180deg,var(--primary),#E8B4B8)}
+  .section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 16px}
+  .section-more{font-size:13px;color:var(--text-hint);display:flex;align-items:center;gap:2px;cursor:pointer}
+  .section-more svg{width:14px;height:14px}
+  .btn-primary{
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;border:none;
+    border-radius:24px;padding:10px 26px;font-size:14px;font-weight:600;cursor:pointer;
+    transition:all .25s cubic-bezier(.34,1.56,.64,1);
+    white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;
+    box-shadow:0 4px 16px rgba(212,138,150,.3);
+    letter-spacing:.5px;
+  }
+  .btn-primary:active{opacity:.9;transform:scale(.96);box-shadow:0 2px 8px rgba(212,138,150,.2)}
+  .btn-outline{
+    background:transparent;border:1.5px solid var(--primary);color:var(--primary);
+    border-radius:20px;padding:6px 18px;font-size:13px;font-weight:500;
+    cursor:pointer;transition:all .2s;white-space:nowrap;
+  }
+  .btn-outline:active{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;transform:scale(.96)}
+  .btn-sm{padding:5px 14px;font-size:12px;border-radius:16px}
+  .tag-vip{
+    display:inline-flex;align-items:center;gap:4px;padding:4px 12px;
+    background:linear-gradient(135deg,rgba(212,160,160,.15),rgba(212,138,150,.08));
+    color:var(--gold-dark);
+    font-size:11px;font-weight:600;border-radius:12px;
+    border:1px solid rgba(212,160,160,.25);
+    box-shadow:0 1px 4px rgba(212,160,160,.1);
+  }
+  .tag-vip svg{filter:drop-shadow(0 1px 1px rgba(212,160,160,.2))}
+  .card{
+    background:var(--white);border-radius:14px;box-shadow:var(--card-shadow);overflow:hidden;
+    transition:box-shadow .2s;
+  }
+  .card:active{box-shadow:0 1px 6px rgba(180,100,120,.15)}
+
+  /* ===== 首页 ===== */
+  .carousel{margin:0 16px 16px;border-radius:16px;overflow:hidden;position:relative;height:180px}
+  .carousel-track{display:flex;height:100%;transition:transform .5s cubic-bezier(.4,0,.2,1)}
+  .carousel-slide{min-width:100%;height:100%;position:relative;overflow:hidden}
+  .carousel-slide img{width:100%;height:100%;object-fit:cover;display:block}
+  .carousel-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(180,100,120,.02) 0%,rgba(180,100,120,.4) 100%);display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;padding:16px 18px}
+  .carousel-overlay h3{font-size:18px;font-weight:700;color:#fff;margin-bottom:4px;text-shadow:0 1px 4px rgba(0,0,0,.2)}
+  .carousel-overlay p{font-size:12px;color:rgba(255,255,255,.85);text-shadow:0 1px 2px rgba(0,0,0,.15)}
+  .carousel-overlay .co-tag{display:inline-block;padding:2px 6px;border-radius:6px;font-size:10px;font-weight:500;color:#fff;background:rgba(255,255,255,.2);backdrop-filter:blur(6px);margin-bottom:6px;border:1px solid rgba(255,255,255,.15)}
+  .carousel-dots{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2}
+  .carousel-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,.4);transition:all .3s}
+  .carousel-dot.active{width:18px;background:#fff}
+  .carousel-actions{position:absolute;top:12px;right:12px;display:flex;gap:8px;z-index:2}
+  .carousel-actions .ca-btn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.65);display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(6px);transition:transform .15s,background .15s}
+  .carousel-actions .ca-btn:active{transform:scale(.9);background:rgba(255,255,255,.8)}
+  .carousel-actions .ca-btn svg{width:16px;height:16px;color:var(--text-sub)}
+
+  .user-card{
+    margin:0 16px 16px;padding:18px 20px;
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(253,246,248,.9));
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(180,100,120,.12),0 0 0 1px rgba(212,138,150,.08);
+    display:flex;align-items:center;gap:14px;
+    flex-wrap:wrap;position:relative;overflow:hidden;
+    transition:transform .2s,box-shadow .2s;cursor:pointer;
+  }
+  .user-card:active{transform:scale(.98);box-shadow:0 2px 10px rgba(180,100,120,.1)}
+  .user-card::before{
+    content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;
+    background:radial-gradient(circle,rgba(212,138,150,.08) 0%,transparent 70%);
+    pointer-events:none;
+  }
+  .user-card::after{
+    content:'';position:absolute;bottom:-20px;left:-20px;width:80px;height:80px;
+    background:radial-gradient(circle,rgba(212,160,160,.06) 0%,transparent 60%);
+    pointer-events:none;
+  }
+  .uc-avatar{
+    width:56px;height:56px;border-radius:50%;object-fit:cover;
+    border:3px solid var(--primary-light);
+    flex-shrink:0;
+    box-shadow:0 3px 12px rgba(180,100,120,.2);
+  }
+  .uc-info{flex:1;min-width:0;z-index:1}
+  .uc-name-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .uc-name{font-size:17px;font-weight:700;color:var(--text-main)}
+  .uc-level{font-size:12px;color:var(--gold-dark);font-weight:600;padding:2px 8px;background:rgba(212,160,160,.1);border-radius:8px}
+  .uc-stats{display:flex;gap:0;width:100%;margin-top:12px;padding-top:12px;border-top:1px solid rgba(212,138,150,.12);z-index:1}
+  .uc-stat{text-align:center;flex:1;position:relative}
+  .uc-stat+.uc-stat::before{content:'';position:absolute;left:0;top:4px;bottom:4px;width:1px;background:rgba(212,138,150,.12)}
+  .uc-stat-num{font-size:16px;font-weight:700;color:var(--text-main)}
+  .uc-stat-label{font-size:11px;color:var(--text-hint);margin-top:3px}
+
+
+  .doctor-card-home{
+    margin:0 16px 20px;padding:16px;background:var(--white);border-radius:16px;
+    box-shadow:var(--card-shadow);display:flex;align-items:center;gap:14px;
+    transition:box-shadow .2s;cursor:pointer;
+  }
+  .doctor-card-home:active{box-shadow:0 1px 6px rgba(180,100,120,.15)}
+  .dch-avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--primary-light)}
+  .dch-info{flex:1}
+  .dch-name{font-size:15px;font-weight:700;color:var(--text-main);margin-bottom:2px}
+  .dch-role{font-size:12px;color:var(--text-hint);margin-bottom:8px}
+  .dch-desc{font-size:11px;color:var(--text-sub)}
+
+  /* ===== 美丽档案页 ===== */
+  .page-nav{
+    display:flex;align-items:center;padding:14px 16px 16px;gap:10px;
+    background:rgba(253,246,248,.85);
+    backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);
+    position:sticky;top:44px;z-index:99;
+    margin-bottom:8px;
+  }
+  .pn-back{width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;transition:background .15s}
+  .pn-back:active{background:rgba(0,0,0,.06)}
+  .pn-back svg{width:22px;height:22px;color:var(--text-main)}
+  .pn-title{flex:1}
+  .pn-title h2{font-size:17px;font-weight:700;color:var(--text-main)}
+  .pn-title p{font-size:11px;color:var(--text-hint);margin-top:1px}
+  .pn-action{cursor:pointer}
+  .pn-action svg{width:22px;height:22px;color:var(--text-sub)}
+
+  .year-picker{padding:0 16px 16px;display:flex;gap:8px}
+  .yp-item{
+    padding:8px 20px;border-radius:20px;font-size:14px;font-weight:500;cursor:pointer;
+    transition:all .2s;border:none;
+  }
+  .yp-item.active{background:var(--text-main);color:#fff}
+  .yp-item:not(.active){background:var(--bg-warm);color:var(--text-sub)}
+
+  .archive-summary{margin:0 16px 16px;display:flex;justify-content:space-between;align-items:center}
+  .as-left p:first-child{font-size:14px;font-weight:600;color:var(--text-main)}
+  .as-left p:last-child{font-size:12px;color:var(--text-hint)}
+  .as-compare{font-size:12px;color:var(--primary);cursor:pointer}
+
+  .face-compare{margin:0 16px 20px;display:flex;gap:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .face-compare::-webkit-scrollbar{display:none}
+  .fc-item{min-width:110px;text-align:center;flex-shrink:0}
+  .fc-face{width:110px;height:140px;border-radius:14px;object-fit:cover;margin-bottom:6px}
+  .fc-date{font-size:11px;color:var(--text-hint)}
+
+  .skin-chart{margin:0 16px 20px;background:var(--white);border-radius:16px;padding:16px;box-shadow:var(--card-shadow);overflow:hidden}
+  .sc-title{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:12px}
+  .sc-chart{height:160px;position:relative}
+  .sc-chart svg{width:100%;height:100%}
+  .sc-tabs{display:flex;justify-content:space-around;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+  .sct-tab{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+  .sct-tab svg{width:24px;height:24px;color:var(--text-hint)}
+  .sct-tab span{font-size:10px;color:var(--text-hint)}
+  .sct-tab.active svg,.sct-tab.active span{color:var(--primary)}
+
+  /* ===== 肌肤检测页 ===== */
+  .score-section{padding:40px 16px 30px;text-align:center}
+  .score-circle{
+    width:180px;height:180px;border-radius:50%;margin:0 auto 20px;
+    background:radial-gradient(circle at 50% 50%,#fff 0%,var(--bg) 60%,var(--primary-light) 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    box-shadow:0 8px 32px rgba(180,100,120,.18),inset 0 0 0 3px rgba(212,138,150,.12);position:relative;
+  }
+  .score-circle::before{content:'';position:absolute;inset:8px;border-radius:50%;border:2px dashed var(--primary-light);opacity:.6}
+  .score-num{font-size:52px;font-weight:800;color:var(--text-main);line-height:1}
+  .score-status{font-size:14px;color:var(--text-sub);margin-top:4px}
+  .score-detail{margin-top:12px}
+
+  .metrics-list{padding:0 16px 24px}
+  .metric-item{display:flex;align-items:center;margin-bottom:16px;gap:12px;padding:10px 12px;background:var(--white);border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.03)}
+  .mi-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .mi-icon svg{width:18px;height:18px}
+  .mi-info{flex:1}
+  .mi-name{font-size:13px;color:var(--text-sub);margin-bottom:5px}
+  .mi-bar{height:8px;border-radius:4px;background:#F0EEE9;overflow:hidden}
+  .mi-fill{height:100%;border-radius:4px;transition:width 1s ease}
+  .mi-score{font-size:16px;font-weight:700;color:var(--text-main);min-width:40px;text-align:right}
+
+  /* ===== 医生建议页 ===== */
+  .doctor-profile-card{margin:0 16px 16px;padding:18px;background:var(--white);border-radius:16px;box-shadow:var(--card-shadow);display:flex;align-items:center;gap:14px;transition:box-shadow .2s}
+  .doctor-profile-card:active{box-shadow:0 1px 6px rgba(232,145,160,.1)}
+  .dpc-avatar{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--primary-light)}
+  .dpc-info{flex:1}
+  .dpc-name{font-size:17px;font-weight:700;color:var(--text-main)}
+  .dpc-tag{font-size:12px;color:var(--primary);background:var(--bg-warm);padding:2px 8px;border-radius:8px;display:inline-block;margin-top:4px}
+  .recommend-list{padding:0 16px 20px}
+  .rec-item{
+    background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+    box-shadow:var(--card-shadow);display:flex;align-items:center;gap:12px;
+    transition:transform .15s,box-shadow .15s;cursor:pointer;
+  }
+  .rec-item:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .rec-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .rec-icon svg{width:20px;height:20px}
+  .rec-info{flex:1}
+  .rec-name{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:2px}
+  .rec-desc{font-size:12px;color:var(--text-hint)}
+
+  /* ===== 会员权益页（暗色） ===== */
+  .vip-page{background:#1A1A1A!important;color:#fff}
+  .vip-page .status-bar{background:rgba(26,26,26,.85)!important;backdrop-filter:blur(12px)}
+  .vip-page .page-nav{background:rgba(26,26,26,.85)!important;top:44px}
+  .vip-page .section-title{color:#fff}
+  .vip-card-dark{
+    margin:0 16px 20px;background:linear-gradient(135deg,#2D2D2D,#1A1A1A);
+    border-radius:18px;padding:24px 20px;position:relative;overflow:hidden;
+    border:1px solid rgba(212,165,116,.2);
+    box-shadow:0 8px 32px rgba(0,0,0,.3);
+  }
+  .vip-card-dark::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(212,165,116,.08),transparent)}
+  .vcd-header{display:flex;align-items:center;gap:8px;margin-bottom:16px}
+  .vcd-crown{margin-bottom:8px}
+  .vcd-crown svg{width:22px;height:22px}
+  .vcd-title{font-size:18px;font-weight:700;color:#fff}
+  .vcd-expire{font-size:11px;color:rgba(255,255,255,.4);margin-left:auto}
+  .vcd-level{font-size:28px;font-weight:800;color:var(--gold);margin-bottom:4px}
+  .vcd-points{font-size:12px;color:rgba(255,255,255,.5);margin-bottom:14px}
+  .vcd-bar{height:6px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden;margin-bottom:6px}
+  .vcd-bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),#E8C078)}
+  .vcd-tip{font-size:11px;color:rgba(255,255,255,.4);text-align:right}
+  .vip-benefits{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:0 16px 20px}
+  .vb-item{
+    background:rgba(255,255,255,.06);border-radius:14px;padding:16px 10px;text-align:center;
+    border:1px solid rgba(255,255,255,.06);transition:all .2s;cursor:pointer;
+  }
+  .vb-item:active{background:rgba(255,255,255,.12);transform:scale(.96)}
+  .vb-icon{margin-bottom:8px}
+  .vb-icon svg{width:26px;height:26px}
+  .vb-name{font-size:13px;color:rgba(255,255,255,.85);font-weight:500;margin-bottom:2px}
+  .vb-desc{font-size:10px;color:rgba(255,255,255,.4)}
+
+  /* ===== 美丽任务页 ===== */
+  .task-list{padding:0 16px 20px}
+  .task-item{
+    background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+    box-shadow:var(--card-shadow);display:flex;align-items:center;gap:12px;
+    transition:transform .15s,box-shadow .15s;cursor:pointer;
+  }
+  .task-item:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .task-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .task-icon svg{width:20px;height:20px}
+  .task-info{flex:1}
+  .task-name{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:2px}
+  .task-progress{font-size:12px;color:var(--text-hint)}
+  .task-reward{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+  .task-points{font-size:14px;font-weight:700;color:var(--primary)}
+
+  /* ===== 邀请朋友页 ===== */
+  .invite-hero{
+    margin:16px;border-radius:20px;overflow:hidden;position:relative;
+    background:linear-gradient(135deg,var(--bg-warm),var(--primary-light),var(--bg));
+    padding:28px 20px;display:flex;align-items:center;gap:16px;
+    box-shadow:0 4px 20px rgba(180,100,120,.12);
+  }
+  .invite-hero-left h2{font-size:22px;font-weight:700;color:var(--text-main);margin-bottom:6px}
+  .invite-hero-left p{font-size:13px;color:var(--text-sub);margin-bottom:10px}
+  .invite-price{font-size:34px;font-weight:800;color:var(--gold-dark)}
+  .invite-price small{font-size:14px;font-weight:400}
+  .invite-hero-right{width:120px;height:130px;border-radius:14px;object-fit:cover;flex-shrink:0}
+  .invite-channels{padding:0 16px 20px}
+  .ic-title{font-size:15px;font-weight:600;color:var(--text-main);margin-bottom:14px}
+  .ic-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .ic-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s}
+  .ic-item:active{transform:scale(.92)}
+  .ic-icon{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:var(--bg-warm)}
+  .ic-icon svg{width:22px;height:22px}
+  .ic-label{font-size:11px;color:var(--text-sub)}
+  .invite-stats{
+    text-align:center;padding:16px;margin:0 16px 24px;font-size:13px;color:var(--text-hint);
+    background:var(--white);border-radius:14px;box-shadow:var(--card-shadow);
+  }
+
+  /* ===== 商城页 ===== */
+  .shop-search{margin:0 16px 14px}
+  .shop-search input{
+    width:100%;height:38px;border-radius:19px;border:1.5px solid var(--border);
+    background:var(--white);padding:0 16px 0 38px;font-size:13px;outline:none;
+    color:var(--text-main);transition:border-color .2s,box-shadow .2s;
+  }
+  .shop-search input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(232,145,160,.1)}
+  .shop-search{margin:0 16px 14px;position:relative}
+  .shop-search::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;background:url("data:image/svg+xml,%3Csvg viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") no-repeat center/contain;pointer-events:none;z-index:1}
+  .shop-banner{margin:0 16px 16px;border-radius:14px;overflow:hidden;position:relative;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+  .shop-banner img{width:100%;aspect-ratio:21/9;object-fit:cover;display:block}
+  .shop-banner-tag{
+    position:absolute;top:10px;left:10px;padding:4px 10px;border-radius:8px;
+    font-size:11px;font-weight:600;color:#fff;background:var(--primary);
+  }
+  .shop-categories{padding:0 16px 14px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .shop-categories::-webkit-scrollbar{display:none}
+  .scat-item{flex-shrink:0;padding:8px 18px;border-radius:20px;font-size:13px;font-weight:500;white-space:nowrap;cursor:pointer;transition:all .2s;border:none;display:flex;align-items:center;gap:5px;color:var(--text-sub);background:var(--bg-warm)}
+  .scat-item.active{background:var(--primary);color:#fff}
+  .scat-item:active{transform:scale(.96)}
+  .scat-item svg{width:16px;height:16px}
+  .product-grid{padding:0 16px 20px;display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+  .prod-card{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:var(--card-shadow);transition:transform .15s,box-shadow .15s;cursor:pointer}
+  .prod-card:active{transform:scale(.97);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .prod-img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+  .prod-info{padding:10px 12px}
+  .prod-name{font-size:13px;font-weight:600;color:var(--text-main);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .prod-price{display:flex;align-items:baseline;gap:3px}
+  .prod-price .sym{font-size:11px;color:var(--primary);font-weight:600}
+  .prod-price .amt{font-size:17px;font-weight:700;color:var(--primary)}
+  .prod-price .orig{font-size:11px;color:var(--text-hint);text-decoration:line-through}
+
+  /* ===== 预约服务页 ===== */
+  .service-tabs{padding:0 16px 14px;display:flex;gap:8px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .service-tabs::-webkit-scrollbar{display:none}
+  .st-tab{
+    padding:7px 16px;border-radius:18px;font-size:13px;font-weight:500;white-space:nowrap;
+    cursor:pointer;transition:all .2s;border:none;
+  }
+  .st-tab.active{background:var(--text-main);color:#fff}
+  .st-tab:not(.active){background:var(--bg-warm);color:var(--text-sub)}
+  .service-list{padding:0 16px 20px}
+  .svc-card{
+    background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+    box-shadow:var(--card-shadow);display:flex;align-items:center;gap:12px;
+    transition:transform .15s,box-shadow .15s;cursor:pointer;
+  }
+  .svc-card:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .svc-avatar{width:54px;height:54px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--primary-light)}
+  .svc-info{flex:1}
+  .svc-name{font-size:15px;font-weight:600;color:var(--text-main)}
+  .svc-skill{font-size:12px;color:var(--text-hint);margin:2px 0 6px}
+  .svc-meta{display:flex;align-items:center;gap:8px}
+  .svc-stars{color:var(--gold);font-size:11px}
+  .svc-price{font-size:16px;font-weight:700;color:var(--primary)}
+
+  /* ===== 消息中心页 ===== */
+  .msg-categories{padding:0 16px 16px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .mc-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .15s}
+  .mc-item:active{transform:scale(.92)}
+  .mc-icon{width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+  .mc-icon svg{width:22px;height:22px}
+  .mc-label{font-size:11px;color:var(--text-sub)}
+  .message-list{padding:0 16px 20px}
+  .msg-item{
+    background:var(--white);border-radius:14px;padding:14px 16px;margin-bottom:8px;
+    box-shadow:var(--card-shadow);display:flex;align-items:flex-start;gap:12px;cursor:pointer;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .msg-item:active{transform:scale(.98);box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .msg-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+  .msg-icon svg{width:18px;height:18px}
+  .msg-body{flex:1;min-width:0}
+  .msg-title{font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:3px}
+  .msg-preview{font-size:12px;color:var(--text-hint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .msg-time{font-size:11px;color:var(--text-hint);flex-shrink:0;margin-top:2px}
+
+  /* ===== 我的页面 ===== */
+  .profile-card{
+    margin:0 16px 16px;padding:20px;
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(253,246,248,.9));
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(180,100,120,.1),0 0 0 1px rgba(212,138,150,.06);
+    position:relative;overflow:hidden;
+  }
+  .profile-card::before{
+    content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;
+    background:radial-gradient(circle,rgba(212,138,150,.08) 0%,transparent 70%);pointer-events:none;
+  }
+  .profile-card-top{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+  .ph-avatar{
+    width:72px;height:72px;border-radius:50%;object-fit:cover;
+    border:3px solid var(--primary-light);flex-shrink:0;
+    box-shadow:0 4px 16px rgba(180,100,120,.18);
+  }
+  .ph-info{flex:1}
+  .ph-name-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .ph-name{font-size:20px;font-weight:700;color:var(--text-main)}
+  .ph-edit{font-size:12px;color:var(--primary);cursor:pointer;white-space:nowrap;flex-shrink:0}
+  .ph-assets{
+    display:flex;gap:0;margin-top:16px;padding-top:16px;border-top:1px solid rgba(212,138,150,.12);
+  }
+  .ph-asset{text-align:center;flex:1;position:relative}
+  .ph-asset+.ph-asset::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:1px;background:rgba(212,138,150,.12)}
+  .ph-asset-val{font-size:18px;font-weight:700;color:var(--text-main)}
+  .ph-asset-label{font-size:11px;color:var(--text-hint);margin-top:3px}
+  .profile-advisor{
+    margin:0 16px 16px;padding:16px 18px;
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(253,246,248,.9));
+    border-radius:20px;
+    box-shadow:0 4px 20px rgba(180,100,120,.1),0 0 0 1px rgba(212,138,150,.06);
+    display:flex;align-items:center;gap:14px;
+    transition:box-shadow .2s;
+  }
+  .profile-advisor:active{box-shadow:0 1px 6px rgba(180,100,120,.15)}
+  .pa-avatar{width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--primary-light)}
+  .pa-info{flex:1}
+  .pa-name{font-size:15px;font-weight:600;color:var(--text-main)}
+  .pa-role{font-size:12px;color:var(--text-hint);margin-top:2px}
+  .pa-call{
+    width:40px;height:40px;border-radius:50%;
+    background:linear-gradient(135deg,var(--primary),var(--primary-dark));
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+    transition:transform .15s;box-shadow:0 3px 12px rgba(212,138,150,.3);
+  }
+  .pa-call:active{transform:scale(.9)}
+  .pa-call svg{width:18px;height:18px;color:#fff}
+  .service-grid{
+    margin:0 16px 20px;
+    background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(253,246,248,.9));
+    border-radius:20px;padding:20px 16px;
+    box-shadow:0 4px 20px rgba(180,100,120,.1),0 0 0 1px rgba(212,138,150,.06);
+  }
+  .sg-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px 12px}
+  .sg-item{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:transform .15s}
+  .sg-item:active{transform:scale(.92)}
+  .sg-icon{
+    width:44px;height:44px;border-radius:14px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(145deg,var(--white),#FDF0F3);
+    border:1.5px solid rgba(212,138,150,.12);
+    box-shadow:0 3px 10px rgba(212,138,150,.08);
+  }
+  .sg-icon svg{width:20px;height:20px}
+  .sg-label{font-size:12px;color:var(--text-sub);font-weight:500}
+
+  /* Toast */
+  .toast{
+    position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.9);
+    background:rgba(180,100,120,.92);color:#fff;padding:10px 24px;border-radius:12px;
+    font-size:14px;z-index:300;opacity:0;transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;
+    backdrop-filter:blur(10px);box-shadow:0 4px 20px rgba(180,100,120,.25);
+  }
+  .toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+
+  /* Back to top */
+  .backtop{
+    position:fixed;right:16px;bottom:24px;width:40px;height:40px;border-radius:50%;
+    background:linear-gradient(135deg,var(--white),var(--bg-warm));
+    border:1px solid rgba(212,138,150,.15);
+    box-shadow:0 2px 12px rgba(180,100,120,.12);display:flex;
+    align-items:center;justify-content:center;cursor:pointer;z-index:50;
+    opacity:0;transform:scale(.8);transition:all .3s;pointer-events:none;
+  }
+  .backtop.show{opacity:1;transform:scale(1);pointer-events:auto}
+  .backtop:active{transform:scale(.9);box-shadow:0 1px 6px rgba(180,100,120,.15)}
+  .backtop svg{width:20px;height:20px;color:var(--primary)}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<!-- ===== 页面区域 ===== -->
+<div class="pages" id="pages">
+
+  <!-- ========== 首页 ========== -->
+  <div class="page active" id="page-home" data-page="home">
+    <div class="status-bar"><span class="sb-time" id="sbTime">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+
+    <!-- 轮播图 -->
+    <div class="carousel" id="carousel">
+      <div class="carousel-track" id="carouselTrack">
+        <div class="carousel-slide">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=premium%20hyaluronic%20acid%20serum%20skincare%20product%20elegant%20glass%20bottle%20soft%20pink%20background%20luxury%20cosmetics&image_size=landscape_16_9" alt="玻尿酸精华">
+          <div class="carousel-overlay"><span class="co-tag">新品首发</span><h3>玻尿酸水光精华</h3><p>深层补水 锁住青春光泽</p></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20anti-aging%20cream%20skincare%20jar%20rose%20gold%20packaging%20elegant%20beauty%20product%20soft%20lighting&image_size=landscape_16_9" alt="抗衰面霜">
+          <div class="carousel-overlay"><span class="co-tag">明星单品</span><h3>紧致修护面霜</h3><p>逆转时光 重塑面部轮廓</p></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20beauty%20spa%20treatment%20facial%20massage%20relaxing%20ambiance%20soft%20lighting%20luxury%20clinic&image_size=landscape_16_9" alt="水光项目">
+          <div class="carousel-overlay"><span class="co-tag">限时特惠</span><h3>水光补水项目</h3><p>会员专享价 立减300元</p></div>
+        </div>
+        <div class="carousel-slide">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=premium%20vitamin%20C%20brightening%20serum%20skincare%20dropper%20bottle%20elegant%20packaging%20luxury%20beauty&image_size=landscape_16_9" alt="美白精华">
+          <div class="carousel-overlay"><span class="co-tag">口碑爆款</span><h3>维C焕白精华</h3><p>28天见证透亮蜕变</p></div>
+        </div>
+      </div>
+      <div class="carousel-dots" id="carouselDots">
+        <div class="carousel-dot active"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+        <div class="carousel-dot"></div>
+      </div>
+      <div class="carousel-actions">
+        <div class="ca-btn" onclick="showToast('设置')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+        <div class="ca-btn" onclick="switchPage('messages')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><circle cx="18" cy="5" r="3" fill="#FF4D4F" stroke="none"/></svg></div>
+      </div>
+    </div>
+
+    <!-- 用户信息卡 -->
+    <div class="user-card" onclick="switchPage('profile')">
+      <img class="uc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20asian%20woman%20portrait%20headshot%20soft%20lighting%20natural%20beauty%20professional&image_size=square_hd" alt="头像">
+      <div class="uc-info">
+        <div class="uc-name-row"><span class="uc-name">林女士</span><span class="tag-vip"><svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold-dark)" style="vertical-align:-1px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> VIP</span><span class="uc-level">LV.5</span></div>
+        <div style="font-size:11px;color:var(--text-hint)">黄金会员</div>
+      </div>
+      <div class="uc-stats">
+        <div class="uc-stat"><div class="uc-stat-num">68,800</div><div class="uc-stat-label">累计消费</div></div>
+        <div class="uc-stat"><div class="uc-stat-num">8700</div><div class="uc-stat-label">余额</div></div>
+        <div class="uc-stat"><div class="uc-stat-num">10000</div><div class="uc-stat-label">成长值</div></div>
+      </div>
+    </div>
+
+    <!-- 导航入口 -->
+    <div class="section-header"><div class="section-title">快捷入口</div></div>
+        <div class="nav-grid">
+      <div class="nav-item" onclick="switchPage('shop')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div><span class="nav-label">商城</span></div>
+      <div class="nav-item" onclick="switchPage('advice')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><span class="nav-label">建议</span></div>
+      <div class="nav-item" onclick="switchPage('messages')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="nav-badge">3</span></div><span class="nav-label">消息</span></div>
+      <div class="nav-item" onclick="switchPage('vip')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></div><span class="nav-label">权益</span></div>
+      <div class="nav-item" onclick="switchPage('profile')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><span class="nav-label">我的</span></div>
+      <div class="nav-item" onclick="switchPage('archive')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><span class="nav-label">档案</span></div>
+      <div class="nav-item" onclick="switchPage('skintest')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div><span class="nav-label">检测</span></div>
+      <div class="nav-item" onclick="switchPage('appointment')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div><span class="nav-label">预约</span></div>
+      <div class="nav-item" onclick="switchPage('tasks')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div><span class="nav-label">任务</span></div>
+      <div class="nav-item" onclick="switchPage('invite')"><div class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span class="nav-label">邀请</span></div>
+    </div>
+
+    <!-- 顾问卡片 -->
+    <div class="doctor-card-home">
+      <img class="dch-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=friendly%20asian%20female%20beauty%20consultant%20portrait%20warm%20smile%20professional&image_size=square_hd" alt="Angel">
+      <div class="dch-info">
+        <div class="dch-name">Angel &middot; 美丽顾问</div>
+        <div class="dch-role">24小时为您答疑</div>
+        <div class="dch-desc">专业定制您的美丽方案</div>
+      </div>
+      <button class="btn-primary btn-sm" onclick="showToast('正在连接Angel...')">立即咨询</button>
+    </div>
+  </div>
+
+  <!-- ========== 商品/商城页 ========== -->
+  <div class="page" id="page-shop" data-page="shop">
+    <div class="status-bar"><span class="sb-time" id="sbTime2">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav"><div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div><div class="pn-title" style="text-align:center"><h2>会员商城</h2><p>正品保障 会员专享价</p></div><div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div></div>
+    <div class="shop-search"><input type="text" placeholder="搜索商品、项目..." onfocus="this.placeholder='输入关键词搜索'"></div>
+    <div class="shop-banner">
+      <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20skincare%20products%20set%20cosmetics%20beauty%20essence%20serum%20rose%20gold%20elegance&image_size=landscape_16_9" alt="专区">
+      <span class="shop-banner-tag">限时特惠</span>
+    </div>
+    <div class="shop-categories">
+      <div class="scat-item active" onclick="selectShopCat(this)">护肤</div>
+      <div class="scat-item" onclick="selectShopCat(this)">医美项目</div>
+      <div class="scat-item" onclick="selectShopCat(this)">美容仪器</div>
+      <div class="scat-item" onclick="selectShopCat(this)">内服保养</div>
+      <div class="scat-item" onclick="selectShopCat(this)">积分兑换</div>
+      <div class="scat-item" onclick="selectShopCat(this)">热销推荐</div>
+      <div class="scat-item" onclick="selectShopCat(this)">新品上市</div>
+    </div>
+    <div class="section-header"><div class="section-title">热销推荐</div><div class="section-more" onclick="showToast('查看全部商品')">更多 &#8250;</div></div>
+    <div class="product-grid">
+      <div class="prod-card" onclick="showToast('查看商品详情')"><img class="prod-img" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=luxury%20face%20serum%20bottle%20skincare%20product%20elegant%20packaging%20pink%20gold&image_size=square_hd" alt="产品"><div class="prod-info"><div class="prod-name">紧致修护精华液</div><div class="prod-price"><span class="sym">&yen;</span><span class="amt">880</span><span class="orig">&yen;1280</span></div></div></div>
+      <div class="prod-card" onclick="showToast('查看商品详情')"><img class="prod-img" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=premium%20moisturizing%20cream%20jar%20luxury%20skincare%20product%20elegant%20container&image_size=square_hd" alt="产品"><div class="prod-info"><div class="prod-name">水润保湿面霜</div><div class="prod-price"><span class="sym">&yen;</span><span class="amt">680</span><span class="orig">&yen;980</span></div></div></div>
+      <div class="prod-card" onclick="showToast('查看商品详情')"><img class="prod-img" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=eye%20cream%20tube%20premium%20anti-aging%20skincare%20product%20elegant%20design&image_size=square_hd" alt="产品"><div class="prod-info"><div class="prod-name">眼部紧致精华霜</div><div class="prod-price"><span class="sym">&yen;</span><span class="amt">1280</span><span class="orig">&yen;1980</span></div></div></div>
+      <div class="prod-card" onclick="showToast('查看商品详情')"><img class="prod-img" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=facial%20mask%20sheet%20pack%20skincare%20product%20rose%20gold%20luxury&image_size=square_hd" alt="产品"><div class="prod-info"><div class="prod-name">玫瑰焕采面膜套装</div><div class="prod-price"><span class="sym">&yen;</span><span class="amt">298</span><span class="orig">&yen;498</span></div></div></div>
+    </div>
+  </div>
+
+  <!-- ========== 专属建议页 ========== -->
+  <div class="page" id="page-advice" data-page="advice">
+    <div class="status-bar"><span class="sb-time" id="sbTime3">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav"><div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div><div class="pn-title"><h2>医生 专属建议</h2><p>专业面诊 为您定制</p></div><div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div></div>
+
+    <div class="doctor-profile-card">
+      <img class="dpc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20asian%20male%20dermatologist%20doctor%20portrait%20confident%20white%20coat&image_size=square_hd" alt="王医生">
+      <div class="dpc-info">
+        <div class="dpc-name">Dr.王医生</div>
+        <span class="dpc-tag">皮肤管理专家</span>
+      </div>
+      <button class="btn-primary btn-sm" onclick="showToast('预约成功')">在线预约</button>
+    </div>
+
+    <div style="padding:0 16px 12px"><div class="section-title" style="font-size:16px">本周建议</div><p style="font-size:12px;color:var(--text-hint);margin-top:4px">根据最近肌肤状态，为您推荐</p></div>
+    <div class="recommend-list">
+      <div class="rec-item"><div class="rec-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><div class="rec-info"><div class="rec-name">补水护理</div><div class="rec-desc">深层补水 恢复肌肤水润光泽</div></div><button class="btn-outline btn-sm" onclick="showToast('跳转预约')">去预约</button></div>
+      <div class="rec-item"><div class="rec-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></div><div class="rec-info"><div class="rec-name">紧致提升</div><div class="rec-desc">改善松弛 提升面部轮廓线条</div></div><button class="btn-outline btn-sm" onclick="showToast('跳转预约')">去预约</button></div>
+      <div class="rec-item"><div class="rec-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div><div class="rec-info"><div class="rec-name">敏感修复</div><div class="rec-desc">舒缓镇静 修复受损屏障</div></div><button class="btn-outline btn-sm" onclick="showToast('跳转预约')">去预约</button></div>
+    </div>
+    <div style="padding:0 16px 20px"><button class="btn-primary" style="width:100%" onclick="showToast('预约全部项目')">预约全部项目</button></div>
+  </div>
+
+  <!-- ========== 消息中心页 ========== -->
+  <div class="page" id="page-messages" data-page="messages">
+    <div class="status-bar"><span class="sb-time" id="sbTime4">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav"><div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div><div class="pn-title" style="text-align:center"><h2>消息中心</h2></div></div>
+    <div class="msg-categories">
+      <div class="mc-item" onclick="showToast('最新活动')"><div class="mc-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="11" x2="12" y2="14"/></svg></div><span class="mc-label">最新活动</span></div>
+      <div class="mc-item" onclick="showToast('订单状态')"><div class="mc-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="16" height="16" rx="2"/><line x1="12" y1="10" x2="12" y2="14"/><circle cx="12" cy="17" r="1"/></svg></div><span class="mc-label">订单状态</span></div>
+      <div class="mc-item" onclick="showToast('系统消息')"><div class="mc-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg></div><span class="mc-label">系统消息</span></div>
+      <div class="mc-item" onclick="showToast('美丽资讯')"><div class="mc-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div><span class="mc-label">美丽资讯</span></div>
+    </div>
+    <div class="message-list">
+      <div class="msg-item" onclick="showToast('查看消息详情')"><div class="msg-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg></div><div class="msg-body"><div class="msg-title">服务通知</div><div class="msg-preview">您的肌肤检测报告已生成，点击查看详细分析结果</div></div><div class="msg-time">10:30</div></div>
+      <div class="msg-item" onclick="showToast('查看消息详情')"><div class="msg-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="msg-body"><div class="msg-title">预约提醒</div><div class="msg-preview">您的水光补水项目将于明天14:00开始，请准时到店</div></div><div class="msg-time">昨天 16:30</div></div>
+      <div class="msg-item" onclick="showToast('查看消息详情')"><div class="msg-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="msg-body"><div class="msg-title">活动优惠</div><div class="msg-preview">限时特惠活动即将结束，热玛吉FLX低至6折起</div></div><div class="msg-time">03-05</div></div>
+      <div class="msg-item" onclick="showToast('查看消息详情')"><div class="msg-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="msg-body"><div class="msg-title">积分变动</div><div class="msg-preview">恭喜！您完成了连续签到获得+200积分奖励</div></div><div class="msg-time">02-18</div></div>
+      <div class="msg-item" onclick="showToast('查看消息详情')"><div class="msg-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="18" cy="15" r="3"/><circle cx="6" cy="6" r="3"/><circle cx="18" cy="6" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg></div><div class="msg-body"><div class="msg-title">系统通知</div><div class="msg-preview">您关注的紧致修护精华液库存已补货，快来看看吧</div></div><div class="msg-time">02-10</div></div>
+    </div>
+  </div>
+
+  <!-- ========== 我的页面 ========== -->
+  <div class="page" id="page-profile" data-page="profile">
+    <div class="status-bar"><span class="sb-time" id="sbTime5">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav"><div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div><div class="pn-title"><h2>我的</h2></div></div>
+    <div class="profile-card">
+      <div class="profile-card-top">
+        <img class="ph-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20asian%20woman%20portrait%20headshot%20soft%20lighting%20natural%20beauty%20professional&image_size=square_hd" alt="头像">
+        <div class="ph-info">
+          <div class="ph-name-row"><span class="ph-name">林女士</span><span class="tag-vip"><svg viewBox="0 0 24 24" width="12" height="12" fill="var(--gold-dark)" style="vertical-align:-1px"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg> VIP</span><span class="uc-level">LV.5</span></div>
+          <div style="font-size:12px;color:var(--text-hint)">黄金会员</div>
+        </div>
+        <span class="ph-edit">个人信息 &gt;</span>
+      </div>
+      <div class="ph-assets">
+        <div class="ph-asset"><div class="ph-asset-val">3200.00</div><div class="ph-asset-label">我的资产</div></div>
+        <div class="ph-asset"><div class="ph-asset-val">8700</div><div class="ph-asset-label">余额</div></div>
+        <div class="ph-asset"><div class="ph-asset-val">6</div><div class="ph-asset-label">优惠券</div></div>
+      </div>
+    </div>
+
+    <div class="profile-advisor">
+      <img class="pa-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=friendly%20asian%20female%20beauty%20consultant%20portrait%20warm%20smile%20professional&image_size=square_hd" alt="Angel">
+      <div class="pa-info"><div class="pa-name">专属顾问 Angel</div><div class="pa-role">美丽顾问 &middot; 24小时在线</div></div>
+      <div class="pa-call" onclick="showToast('呼叫Angel...')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+    </div>
+
+    <div class="service-grid">
+      <div class="sg-grid">
+        <div class="sg-item" onclick="showToast('我的订单')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></div><span class="sg-label">订单</span></div>
+        <div class="sg-item" onclick="showToast('我的钱包')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div><span class="sg-label">钱包</span></div>
+        <div class="sg-item" onclick="showToast('我的收藏')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><span class="sg-label">收藏</span></div>
+        <div class="sg-item" onclick="showToast('收货地址')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div><span class="sg-label">地址</span></div>
+        <div class="sg-item" onclick="showToast('帮助中心')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9 9a3 3 0 0 1 5.12 1.5c0 1.5-3 2-3 2"/><circle cx="12" cy="17" r="0.5" fill="#D48A96"/></svg></div><span class="sg-label">帮助</span></div>
+        <div class="sg-item" onclick="showToast('设置')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div><span class="sg-label">设置</span></div>
+        <div class="sg-item" onclick="showToast('优惠券包')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><span class="sg-label">优惠券</span></div>
+        <div class="sg-item" onclick="showToast('邀请好友')"><div class="sg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#D48A96" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><span class="sg-label">邀请</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 美丽档案页 ========== -->
+  <div class="page" id="page-archive" data-page="archive">
+    <div class="status-bar"><span class="sb-time">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2>我的美丽档案</h2><p>记录每一寸美丽蜕变</p></div>
+      <div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+    </div>
+    <div class="year-picker" id="yearPicker">
+      <div class="yp-item" onclick="selectYear(this,2025)">2025</div>
+      <div class="yp-item active" onclick="selectYear(this,2026)">2026</div>
+      <div class="yp-item" onclick="selectYear(this,2027)">2027</div>
+    </div>
+    <div class="archive-summary">
+      <div class="as-left"><p>2026年度</p><p>美丽记录 6次</p></div>
+      <div class="as-compare" onclick="showToast('对比变化')">对比变化 &gt;</div>
+    </div>
+    <div class="face-compare">
+      <div class="fc-item"><img class="fc-face" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=young%20asian%20woman%20face%20front%20view%20clean%20skin%20natural%20beauty%20soft%20lighting%20portrait&image_size=portrait_4_3" alt="01/15"><div class="fc-date">01/15</div></div>
+      <div class="fc-item"><img class="fc-face" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beautiful%20asian%20woman%20face%20glowing%20skin%20radiant%20complexion%20portrait&image_size=portrait_4_3" alt="04/20"><div class="fc-date">04/20</div></div>
+      <div class="fc-item"><img class="fc-face" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=elegant%20asian%20woman%20face%20youthful%20skin%20fresh%20look%20portrait&image_size=portrait_4_3" alt="07/18"><div class="fc-date">07/18</div></div>
+    </div>
+    <div class="skin-chart">
+      <div class="sc-title">肌肤趋势</div>
+      <div class="sc-chart">
+        <svg viewBox="0 0 320 150" preserveAspectRatio="none">
+          <defs><linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="var(--primary)" stop-opacity=".3"/><stop offset="100%" stop-color="var(--primary)" stop-opacity="0"/></linearGradient></defs>
+          <line x1="30" y1="10" x2="30" y2="130" stroke="#F0DDD7" stroke-width="1"/>
+          <line x1="30" y1="130" x2="310" y2="130" stroke="#F0DDD7" stroke-width="1"/>
+          <text x="25" y="15" text-anchor="end" fill="#999" font-size="9">100</text>
+          <text x="25" y="75" text-anchor="end" fill="#999" font-size="9">50</text>
+          <text x="25" y="133" text-anchor="end" fill="#999" font-size="9">0</text>
+          <text x="55" y="145" fill="#999" font-size="9" text-anchor="middle">01/15</text>
+          <text x="155" y="145" fill="#999" font-size="9" text-anchor="middle">04/20</text>
+          <text x="255" y="145" fill="#999" font-size="9" text-anchor="middle">07/18</text>
+          <path d="M55,95 Q105,75 155,55 T255,30" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M55,95 Q105,75 155,55 T255,30 L255,130 L55,130 Z" fill="url(#chartGrad)"/>
+          <circle cx="55" cy="95" r="4" fill="var(--primary)"/><circle cx="155" cy="55" r="4" fill="var(--primary)"/><circle cx="255" cy="30" r="4" fill="var(--primary)"/>
+        </svg>
+      </div>
+      <div class="sc-tabs">
+        <div class="sct-tab active" onclick="switchArchiveTab(this,'皮肤检测')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg><span>皮肤检测</span></div>
+        <div class="sct-tab" onclick="switchArchiveTab(this,'项目记录')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><span>项目记录</span></div>
+        <div class="sct-tab" onclick="switchArchiveTab(this,'护理记录')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg><span>护理记录</span></div>
+        <div class="sct-tab" onclick="switchArchiveTab(this,'对比相册')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>对比相册</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== 肌肤检测页 ========== -->
+  <div class="page" id="page-skintest" data-page="skintest">
+    <div class="status-bar"><span class="sb-time">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2>肌肤检测</h2><p>专业权威检测 科学评肤</p></div>
+      <div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+    </div>
+    <div class="score-section">
+      <div class="score-circle">
+        <div class="score-num" id="scoreNum">0</div>
+        <div class="score-status">肌肤状态：<strong style="color:var(--primary)">良好</strong></div>
+        <button class="btn-outline btn-sm score-detail" style="margin-top:8px" onclick="showToast('查看详情报告')">查看详情</button>
+      </div>
+    </div>
+    <div class="metrics-list" id="metricsList">
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg></div><div class="mi-info"><div class="mi-name">水分</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="85"></div></div></div><div class="mi-score">85分</div></div>
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg></div><div class="mi-info"><div class="mi-name">油分</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="62"></div></div></div><div class="mi-score">62分</div></div>
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></div><div class="mi-info"><div class="mi-name">弹性</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="93"></div></div></div><div class="mi-score">93分</div></div>
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="10.5" r="2.5"/><circle cx="8.5" cy="7.5" r="2.5"/><circle cx="6.5" cy="12.5" r="2.5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.328-.68-.5-1.063-.5H12"/></svg></div><div class="mi-info"><div class="mi-name">色调</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="68"></div></div></div><div class="mi-score">68分</div></div>
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/></svg></div><div class="mi-info"><div class="mi-name">毛孔</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="70"></div></div></div><div class="mi-score">70分</div></div>
+      <div class="metric-item"><div class="mi-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div><div class="mi-info"><div class="mi-name">敏感度</div><div class="mi-bar"><div class="mi-fill" style="width:0%;background:linear-gradient(90deg,var(--primary-light),var(--primary))" data-pct="45"></div></div></div><div class="mi-score">45分</div></div>
+    </div>
+    <div style="padding:0 16px 30px"><button class="btn-primary" style="width:100%" onclick="showToast('生成报告中...')">生成专属报告</button></div>
+  </div>
+
+  <!-- ========== 会员权益页 ========== -->
+  <div class="page vip-page" id="page-vip" data-page="vip">
+    <div class="status-bar" style="background:#1A1A1A"><span class="sb-time" style="color:#fff">9:41</span><div class="sb-icons" style="color:#fff"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2 style="color:#fff">会员权益</h2><p style="color:rgba(255,255,255,.5)">尊享专属特权</p></div>
+      <div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+    </div>
+    <div class="vip-card-dark">
+      <div class="vcd-header"><span class="vcd-crown" style="color:var(--gold)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 4l3 6h14l3-6-5-2-5 3-5-3z"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/></svg></span><span class="vcd-title">黑金会员</span><span class="vcd-expire">有效期至 2026.12.31</span></div>
+      <div class="vcd-level">LV.5</div>
+      <div class="vcd-points">87900 / 100000</div>
+      <div class="vcd-bar"><div class="vcd-bar-fill" style="width:87.9%"></div></div>
+      <div class="vcd-tip">再积12100积分即可升级LV.6 &nbsp;&nbsp; 查看升级权益 &gt;</div>
+    </div>
+    <div class="vip-benefits">
+      <div class="vb-item" onclick="showToast('生日礼遇特权')"><div class="vb-icon" style="color:var(--gold)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 12v10H4V12"/><rect x="2" y="7" width="20" height="5" rx="1"/><path d="M17 17l-4-3-4 3V7h8v10z"/></svg></div><div class="vb-name">生日礼遇</div><div class="vb-desc">专属惊喜</div></div>
+      <div class="vb-item" onclick="showToast('专属客服')"><div class="vb-icon" style="color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div><div class="vb-name">专属客服</div><div class="vb-desc">优先响应</div></div>
+      <div class="vb-item" onclick="showToast('免费体验')"><div class="vb-icon" style="color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg></div><div class="vb-name">免费体验</div><div class="vb-desc">每月1次</div></div>
+      <div class="vb-item" onclick="showToast('优先预约')"><div class="vb-icon" style="color:var(--gold)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div><div class="vb-name">新品体验</div><div class="vb-desc">优先权利</div></div>
+      <div class="vb-item" onclick="showToast('积分加成')"><div class="vb-icon" style="color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div class="vb-name">积分加成</div><div class="vb-desc">消费双倍积分</div></div>
+      <div class="vb-item" onclick="showToast('专属折扣')"><div class="vb-icon" style="color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></div><div class="vb-name">专属折扣</div><div class="vb-desc">全场8.5折</div></div>
+    </div>
+  </div>
+
+  <!-- ========== 美丽任务页 ========== -->
+  <div class="page" id="page-tasks" data-page="tasks">
+    <div class="status-bar"><span class="sb-time">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2>美丽任务</h2><p>完成任务 赢取积分</p></div>
+    </div>
+    <div class="task-list">
+      <div class="task-item" onclick="showToast('签到任务')"><div class="task-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></div><div class="task-info"><div class="task-name">连续签到7天</div><div class="task-progress">已签到 (3/7天)</div></div><div class="task-reward"><span class="task-points">+50积分</span><button class="btn-outline btn-sm">去完成</button></div></div>
+      <div class="task-item" onclick="showToast('完善日记')"><div class="task-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div><div class="task-info"><div class="task-name">完善美丽日记</div><div class="task-progress">今日未填写</div></div><div class="task-reward"><span class="task-points">+200积分</span><button class="btn-outline btn-sm">去完善</button></div></div>
+      <div class="task-item" onclick="showToast('预约项目')"><div class="task-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg></div><div class="task-info"><div class="task-name">预约项目</div><div class="task-progress">本周已预约项目数</div></div><div class="task-reward"><span class="task-points">+200积分</span><button class="btn-outline btn-sm">去预约</button></div></div>
+      <div class="task-item" onclick="showToast('清洁度积分')"><div class="task-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div class="task-info"><div class="task-name">清洁度积分</div><div class="task-progress">清洁度达标1次</div></div><div class="task-reward"><span class="task-points">+1积分/次</span><button class="btn-outline btn-sm">去查看</button></div></div>
+      <div class="task-item" onclick="showToast('完善个人档案')"><div class="task-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light));color:var(--primary)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="task-info"><div class="task-name">完善个人档案</div><div class="task-progress">档案完整度有待提升</div></div><div class="task-reward"><span class="task-points">+100积分</span><button class="btn-outline btn-sm">去完善</button></div></div>
+    </div>
+  </div>
+
+  <!-- ========== 邀请朋友页 ========== -->
+  <div class="page" id="page-invite" data-page="invite">
+    <div class="status-bar"><span class="sb-time">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2>邀请朋友</h2><p>一起美 一起省钱</p></div>
+    </div>
+    <div class="invite-hero">
+      <div class="invite-hero-left">
+        <h2>邀请朋友</h2>
+        <p>双方各得</p>
+        <div class="invite-price"><small>&yen;</small>300<small> 元优惠券</small></div>
+      </div>
+      <img class="invite-hero-right" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=two%20happy%20asian%20women%20friends%20hugging%20together%20warm%20friendship%20smiling%20soft%20pink%20background&image_size=portrait_4_3" alt="闺蜜">
+    </div>
+    <div style="padding:0 16px 16px;text-align:center"><button class="btn-primary" style="width:100%" onclick="showToast('分享邀请链接')">立即邀请</button></div>
+    <div class="invite-channels">
+      <div class="ic-title">邀请途径</div>
+      <div class="ic-grid">
+        <div class="ic-item" onclick="showToast('生成海报')"><div class="ic-icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><span class="ic-label">分享海报</span></div>
+        <div class="ic-item" onclick="showToast('微信朋友圈')"><div class="ic-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light))"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div><span class="ic-label">朋友圈</span></div>
+        <div class="ic-item" onclick="showToast('短信邀请')"><div class="ic-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light))"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H8l-4 4V6c0-1.1.9-2 2-2z"/></svg></div><span class="ic-label">短信消息</span></div>
+        <div class="ic-item" onclick="showToast('复制文案')"><div class="ic-icon" style="background:linear-gradient(135deg,var(--bg-warm),var(--primary-light))"><svg viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="15" x2="15" y2="15"/><line x1="12" y1="18" x2="17" y2="18"/></svg></div><span class="ic-label">官方文案</span></div>
+      </div>
+    </div>
+    <div class="invite-stats">已邀请 28 位闺蜜 | 获得奖励 &yen;5600 &gt;</div>
+  </div>
+
+  <!-- ========== 预约服务页 ========== -->
+  <div class="page" id="page-appointment" data-page="appointment">
+    <div class="status-bar"><span class="sb-time">9:41</span><div class="sb-icons"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 9l2 2c4.97-4.97 13.03-4.97 18 0l2-2C16.93 2.93 7.08 2.93 1 9zm8 8l3 3 3-3c-1.65-1.66-4.34-1.66-6 0zm-4-4l2 2c2.76-2.76 7.24-2.76 10 0l2-2C15.14 9.14 8.87 9.14 5 13z"/></svg><svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.67 4H14V2h-4v2H8.33C7.6 4 7 4.6 7 5.33v15.33C7 21.4 7.6 22 8.33 22h7.33c.74 0 1.34-.6 1.34-1.33V5.33C17 4.6 16.4 4 15.67 4z"/></svg></div></div>
+    <div class="page-nav">
+      <div class="pn-back" onclick="goBack()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></div>
+      <div class="pn-title"><h2>预约服务</h2><p>线上预约 到店即享</p></div>
+      <div class="pn-action"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></div>
+    </div>
+    <div class="service-tabs" id="serviceTabs">
+      <div class="st-tab active" onclick="selectServiceTab(this)">全部</div>
+      <div class="st-tab" onclick="selectServiceTab(this)">面部管理</div>
+      <div class="st-tab" onclick="selectServiceTab(this)">身体塑形</div>
+      <div class="st-tab" onclick="selectServiceTab(this)">抗衰美肤</div>
+      <div class="st-tab" onclick="selectServiceTab(this)">肌肤康</div>
+    </div>
+    <div class="service-list">
+      <div class="svc-card" onclick="showToast('预约宋冰冰医生')">
+        <img class="svc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20asian%20female%20doctor%20portrait%20friendly%20smile%20white%20coat&image_size=square_hd" alt="宋冰冰">
+        <div class="svc-info"><div class="svc-name">宋冰冰</div><div class="svc-skill">水光补水</div><div class="svc-meta"><span class="svc-stars"><svg viewBox="0 0 24 24" width="11" height="11" fill="var(--gold)" style="vertical-align:-1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 4.9</span></div></div>
+        <div><div class="svc-price">&yen;880</div><button class="btn-primary btn-sm" onclick="event.stopPropagation();showToast('已预约')">预约</button></div>
+      </div>
+      <div class="svc-card" onclick="showToast('预约李子晴医生')">
+        <img class="svc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20asian%20female%20dermatologist%20portrait%20elegant%20white%20coat&image_size=square_hd" alt="李子晴">
+        <div class="svc-info"><div class="svc-name">李子晴</div><div class="svc-skill">美白嫩肤</div><div class="svc-meta"><span class="svc-stars"><svg viewBox="0 0 24 24" width="11" height="11" fill="var(--gold)" style="vertical-align:-1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 5.0</span></div></div>
+        <div><div class="svc-price">&yen;1,280</div><button class="btn-primary btn-sm" onclick="event.stopPropagation();showToast('已预约')">预约</button></div>
+      </div>
+      <div class="svc-card" onclick="showToast('预约陈雨涵医生')">
+        <img class="svc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20asian%20female%20plastic%20surgeon%20portrait%20confident%20white%20coat&image_size=square_hd" alt="陈雨涵">
+        <div class="svc-info"><div class="svc-name">陈雨涵</div><div class="svc-skill">眼部抗衰</div><div class="svc-meta"><span class="svc-stars"><svg viewBox="0 0 24 24" width="11" height="11" fill="var(--gold)" style="vertical-align:-1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 4.9</span></div></div>
+        <div><div class="svc-price">&yen;1,580</div><button class="btn-primary btn-sm" onclick="event.stopPropagation();showToast('已预约')">预约</button></div>
+      </div>
+      <div class="svc-card" onclick="showToast('预约唐梦婷医生')">
+        <img class="svc-avatar" src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20asian%20female%20beauty%20therapist%20portrait%20warm%20smile%20white%20coat&image_size=square_hd" alt="唐梦婷">
+        <div class="svc-info"><div class="svc-name">唐梦婷</div><div class="svc-skill">肌肤舒缓</div><div class="svc-meta"><span class="svc-stars"><svg viewBox="0 0 24 24" width="11" height="11" fill="var(--gold)" style="vertical-align:-1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> 4.8</span></div></div>
+        <div><div class="svc-price">&yen;2,980</div><button class="btn-primary btn-sm" onclick="event.stopPropagation();showToast('已预约')">预约</button></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end pages -->
+
+
+<!-- 回到顶部 -->
+<div class="backtop" id="backtop" onclick="scrollToTop()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 15 12 9 6 15"/></svg>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 工具函数 =====
+let toastTimer;
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),1500);
+}
+function updateTime(){
+  const n=new Date();
+  document.querySelectorAll('.sb-time').forEach(el=>{
+    el.textContent=n.getHours().toString().padStart(2,'0')+':'+n.getMinutes().toString().padStart(2,'0');
+  });
+}
+updateTime();setInterval(updateTime,30000);
+
+// ===== 轮播图 =====
+let carouselIdx=0;
+const carouselCount=4;
+let carouselTimer;
+function initCarousel(){
+  const track=document.getElementById('carouselTrack');
+  const dots=document.getElementById('carouselDots');
+  if(!track||!dots)return;
+  function goTo(idx){
+    carouselIdx=idx;
+    if(carouselIdx>=carouselCount)carouselIdx=0;
+    if(carouselIdx<0)carouselIdx=carouselCount-1;
+    track.style.transform='translateX(-'+carouselIdx*100+'%)';
+    dots.querySelectorAll('.carousel-dot').forEach((d,i)=>d.classList.toggle('active',i===carouselIdx));
+  }
+  function next(){goTo(carouselIdx+1);}
+  function startAuto(){stopAuto();carouselTimer=setInterval(next,4000);}
+  function stopAuto(){clearInterval(carouselTimer);}
+  startAuto();
+  const carousel=document.getElementById('carousel');
+  if(carousel){
+    carousel.addEventListener('touchstart',e=>{stopAuto();startX=e.touches[0].clientX;},{passive:true});
+    carousel.addEventListener('touchend',e=>{
+      const diff=e.changedTouches[0].clientX-startX;
+      if(Math.abs(diff)>40){diff<0?goTo(carouselIdx+1):goTo(carouselIdx-1);}
+      startAuto();
+    },{passive:true});
+  }
+  dots.querySelectorAll('.carousel-dot').forEach((d,i)=>{d.addEventListener('click',()=>{goTo(i);stopAuto();startAuto();});});
+}
+initCarousel();
+
+// ===== 页面切换系统 =====
+const pageHistory=['home'];
+let currentPage='home';
+
+function showPage(pageId){
+  const pages=document.querySelectorAll('.page');
+  pages.forEach(p=>{p.classList.remove('active','slide-left-out');if(p.dataset.page===pageId)p.classList.add('active');});
+  currentPage=pageId;
+  if(pageId==='skintest'){animateScoreAndMetrics();}
+  scrollToTopImmediate();
+  bindScroll();
+  backtop.classList.remove('show');
+}
+
+function switchPage(pageId){
+  const currentEl=document.querySelector('.page.active');
+  if(currentEl){currentEl.classList.add('slide-left-out');setTimeout(()=>currentEl.classList.remove('active','slide-left-out'),300);}
+  setTimeout(()=>showPage(pageId),50);
+  pageHistory.push(pageId);
+}
+
+function goBack(){
+  if(pageHistory.length<=1)return;
+  pageHistory.pop();
+  const prev=pageHistory[pageHistory.length-1];
+  showPage(prev);
+}
+
+// ===== 回到顶部 =====
+const backtop=document.getElementById('backtop');
+let activeScrollEl=null;
+
+function bindScroll(){
+  const activePage=document.querySelector('.page.active');
+  if(!activePage)return;
+  if(activeScrollEl===activePage)return;
+  if(activeScrollEl)activeScrollEl.removeEventListener('scroll',onPageScroll);
+  activeScrollEl=activePage;
+  activeScrollEl.addEventListener('scroll',onPageScroll,{passive:true});
+  onPageScroll();
+}
+function onPageScroll(){
+  if(!activeScrollEl)return;
+  backtop.classList.toggle('show',activeScrollEl.scrollTop>300);
+}
+bindScroll();
+
+function scrollToTop(){document.querySelector('.page.active').scrollTo({top:0,behavior:'smooth'});}
+function scrollToTopImmediate(){document.querySelector('.page.active').scrollTo({top:0});}
+
+// ===== 美丽档案：年份选择 =====
+function selectYear(el,year){
+  document.querySelectorAll('#yearPicker .yp-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  showToast(`切换至${year}年`);
+}
+function switchArchiveTab(el,name){
+  document.querySelectorAll('.sct-tab').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  showToast(name);
+}
+
+// ===== 肌肤检测：动画 =====
+function animateScoreAndMetrics(){
+  const scoreEl=document.getElementById('scoreNum');
+  let s=0;const target=92;
+  const si=setInterval(()=>{
+    s+=Math.ceil((target-s)/5);
+    if(s>=target){s=target;clearInterval(si);}
+    scoreEl.textContent=s;
+  },40);
+
+  document.querySelectorAll('.mi-fill').forEach((bar,i)=>{
+    const pct=bar.dataset.pct;
+    setTimeout(()=>{bar.style.width=pct+'%';},200+i*80);
+  });
+}
+
+// ===== 服务Tab =====
+function selectServiceTab(el){
+  document.querySelectorAll('#serviceTabs .st-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  showToast(el.textContent);
+}
+
+// ===== 商城分类Tab =====
+function selectShopCat(el){
+  document.querySelectorAll('.shop-categories .scat-item').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  showToast(el.textContent.trim());
+}
+
+// ===== 下拉刷新模拟 =====
+document.querySelectorAll('.page').forEach(pg=>{
+  let startY=0,pulling=false;
+  pg.addEventListener('touchstart',e=>{if(pg.scrollTop===0){startY=e.touches[0].clientY;pulling=true;}},{passive:true});
+  pg.addEventListener('touchmove',e=>{
+    if(!pulling||pg.scrollTop>0)return;
+    if(e.touches[0].clientY-startY>60){showToast('刷新中...');pulling=false;}
+  },{passive:true});
+  pg.addEventListener('touchend',()=>{pulling=false;},{passive:true});
+});
+
+// ===== 阻止双击缩放 =====
+document.addEventListener('gesturestart',e=>e.preventDefault());
+</script>
+</body>
+</html>
